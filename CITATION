@@ -1,9 +1,0 @@
-cff-version: 1.2.0
-title: "BSArray"
-message: "If you use this software, please cite it as below."
-authors:
-  - family-names: "Widyawan"
-    given-names: "Muhammad Habib"
-version: "1.0.0"
-date-released: 2026-05-05
-url: "https://github.com/habibwdy/BSArray"
