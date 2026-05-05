@@ -13,7 +13,7 @@ library(openxlsx)
 library(tibble)
 
 # Load BSAarray functions
-source("BSArray_v1.8.R")
+source("BSArray_v1.0.0.R")
 
 # Load SNP database once when app starts
 snp_db <- read_csv("SNP_master_DB.csv", show_col_types = FALSE) %>%
