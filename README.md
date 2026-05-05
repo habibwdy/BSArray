@@ -93,4 +93,4 @@ BSArray transforms SNP array data into actionable QTL insights by:
 ---
 
 ## 👤 Author
-UGA Soybean Breeding and Genetics Lab
+Habib Widyawan, Zenglu Li (UGA Soybean Breeding and Genetics Lab)
