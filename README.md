@@ -18,7 +18,7 @@ It enables rapid and cost-effective identification of genomic regions (QTL) asso
 
 ## 🧠 Conceptual Workflow
 
-text Theta → Allele Frequency → ΔAF → W statistic → Sliding window → QTL peaks 
+Theta → Allele Frequency → ΔAF → W statistic → Sliding window → QTL peaks 
 
 ---
 
