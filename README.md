@@ -69,6 +69,8 @@ Theta → Allele Frequency → ΔAF → W statistic → Sliding window → QTL p
 
 ## 🧪 Step-by-Step Tutorial
 
+BSArray automatically loads the required SNP and gene databases from the `data/` folder. Users should keep the original folder structure after downloading or cloning the repository.
+
 1. Prepare input files from GenomeStudio  
 2. Upload bulk and parent files  
 3. Assign samples to bulks and parents  
