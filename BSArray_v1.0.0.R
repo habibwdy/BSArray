@@ -1,4 +1,4 @@
-# SoyBSArray_v1.0.0.R
+# SoyBSArray_v1.8.R
 
 library(readr)
 library(dplyr)
@@ -8,62 +8,6 @@ library(purrr)
 library(ggplot2)
 library(IRanges)
 library(tibble)
-
-# ------------------------------------------------------------
-# Portable path helper
-# ------------------------------------------------------------
-
-BSArray_find_root <- function() {
-  # Case 1: current folder contains the BSArray files
-  if (file.exists("BSArray_v1.0.0.R") && dir.exists("data")) {
-    return(normalizePath("."))
-  }
-  
-  # Case 2: user is running from scripts/
-  if (file.exists("../BSArray_v1.0.0.R") && dir.exists("../data")) {
-    return(normalizePath(".."))
-  }
-  
-  # Case 3: fallback to working directory
-  normalizePath(".")
-}
-
-BSArray_load_snp_db <- function(base_dir = BSArray_find_root()) {
-  snp_path <- file.path(base_dir, "data", "SNP_Master_DB.csv")
-  
-  if (!file.exists(snp_path)) {
-    stop(
-      "Could not find SNP_Master_DB.csv. Expected location: ",
-      snp_path,
-      "\nPlease keep the original BSArray folder structure after downloading."
-    )
-  }
-  
-  readr::read_csv(snp_path, show_col_types = FALSE) %>%
-    dplyr::mutate(
-      Chr_v6 = paste0("Gm", stringr::str_pad(as.integer(Chr), 2, pad = "0")),
-      Position_v6 = as.numeric(Position_v6)
-    )
-}
-
-BSArray_load_gene_db <- function(base_dir = BSArray_find_root()) {
-  gene_path <- file.path(base_dir, "data", "gene_summary_clean.csv")
-  
-  if (!file.exists(gene_path)) {
-    stop(
-      "Could not find gene_summary_clean.csv. Expected location: ",
-      gene_path,
-      "\nPlease keep the original BSArray folder structure after downloading."
-    )
-  }
-  
-  readr::read_csv(gene_path, show_col_types = FALSE) %>%
-    tidyr::separate(Interval, into = c("Start", "End"), sep = "-", convert = TRUE) %>%
-    dplyr::mutate(
-      Start = as.numeric(Start),
-      End = as.numeric(End)
-    )
-}
 
 # 1) Import GenomeStudio report
 read_genomestudio_report <- function(filepath) {
@@ -281,9 +225,9 @@ parse_snp_names <- function(data, snp_db) {
     stop("snp_db was not provided.")
   }
   
-snp_lookup <- snp_db %>%
-  dplyr::select(SNP_Name, Chr_v6, Position_v6) %>%
-  dplyr::distinct(SNP_Name, .keep_all = TRUE)
+  snp_lookup <- snp_db %>%
+    dplyr::select(SNP_Name, Position_v6) %>%
+    dplyr::distinct(SNP_Name, .keep_all = TRUE)
   
   data %>%
     dplyr::filter(stringr::str_detect(SNP_Name, "^Gm\\d{1,2}_")) %>%
@@ -293,12 +237,13 @@ snp_lookup <- snp_db %>%
       sep = "_",
       remove = FALSE
     ) %>%
-dplyr::mutate(
-  Chr = dplyr::coalesce(Chr_v6, as.character(Chr)),
-  Chr = factor(Chr, levels = paste0("Gm", stringr::str_pad(1:20, 2, pad = "0"))),
-  Position = dplyr::coalesce(Position_v6, Position)
-) %>%
-dplyr::select(-Chr_v6, -Position_v6)
+    dplyr::mutate(
+      Position = as.numeric(Position),
+      Chr = factor(Chr, levels = paste0("Gm", stringr::str_pad(1:20, 2, pad = "0")))
+    ) %>%
+    dplyr::left_join(snp_lookup, by = "SNP_Name") %>%
+    dplyr::mutate(Position = dplyr::coalesce(Position_v6, Position)) %>%
+    dplyr::select(-Position_v6)
 }
 
 sliding_window_smooth <- function(data, window_size, step_size, min_snp) {
@@ -638,18 +583,13 @@ annotate_markers_with_genes <- function(marker_df, gene_db, flank_bp = 10000) {
     dplyr::left_join(annotated_list, by = "SNP_Name")
 }
 
-BSArray_run_W <- function(bulkfile, parentfile, snp_db = NULL,
+BSArray_run_W <- function(bulkfile, parentfile, snp_db,
                           bulk1_name, bulk2_name,
                           parent1_name = NULL, parent2_name = NULL,
                           window_size = 1e6,
                           step_size = 1e6,
                           min_snp = 10,
                           cutoff = 0.99) {
-  
-  if (is.null(snp_db)) {
-    snp_db <- BSArray_load_snp_db()
-  }
-  
   mydata <- read_genomestudio_report(bulkfile)
   
   parents <- read_parent_file(
@@ -908,11 +848,11 @@ BSArray_run_classic <- function(bulk_matrix_file,
   merged <- bulk_matrix %>%
     dplyr::left_join(parent_matrix, by = "SNP_Name")
   
-  if (is.null(snp_db)) {
-    snp_db <- BSArray_load_snp_db()
+  if (!is.null(snp_db)) {
+    merged <- merged %>% parse_snp_names(snp_db = snp_db)
+  } else {
+    merged <- merged %>% parse_snp_names_matrix()
   }
-  
-  merged <- merged %>% parse_snp_names(snp_db = snp_db)
   
   classified <- merged %>%
     classify_matrix_snps_strict(matching_model = matching_model)
