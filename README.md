@@ -5,6 +5,62 @@ It enables rapid and cost-effective identification of genomic regions (QTL) asso
 
 ---
 
+## 🚀 Quick Start
+
+### 1. Download the repository
+
+Clone the repository:
+
+```bash
+
+git clone https://github.com/habibwdy/BSArray.git
+
+```
+
+or download it as a ZIP file from GitHub.
+
+### 2. Open the project
+
+Open **BSArray.Rproj** (recommended) or open the project folder in RStudio.
+
+### 3. Install required packages
+
+Run:
+
+```r
+
+install.packages(c("shiny"))
+
+```
+
+or install any additional packages if prompted.
+
+### 4. Launch BSArray
+
+```r
+
+shiny::runApp()
+
+```
+
+Alternatively, open `app.R` in RStudio and click **Run App**.
+
+### 5. Run your first analysis
+
+BSArray includes example datasets in the repository.
+
+Simply:
+
+1. Load the example bulk genotype file
+
+2. Load the example parental genotype file
+
+3. Click **Run Analysis**
+
+4. Explore the genomic landscape plots (the Yosemite plot ;) ) and candidate QTL
+
+---
+
 ## 🚀 Key Features
 
 - SNP array-based BSA (no sequencing required)
